@@ -1,0 +1,346 @@
+/* ================ reset =================== */
+html,
+body,
+div,
+span,
+applet,
+object,
+iframe,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+del,
+dfn,
+em,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+b,
+u,
+i,
+center,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+article,
+aside,
+canvas,
+details,
+embed,
+figure,
+figcaption,
+footer,
+header,
+hgroup,
+menu,
+nav,
+output,
+ruby,
+section,
+summary,
+time,
+mark,
+audio,
+video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+article,
+aside,
+details,
+figcaption,
+figure,
+footer,
+header,
+hgroup,
+menu,
+nav,
+section {
+  display: block;
+}
+
+body {
+  line-height: 1;
+}
+
+ol,
+ul {
+  list-style: none;
+}
+
+blockquote,
+q {
+  quotes: none;
+}
+
+blockquote:before,
+blockquote:after,
+q:before,
+q:after {
+  content: "";
+  content: none;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+/* ====================================================== */
+
+/* ===================== Code highlighting =====================*/
+pre code.hljs {
+  font-family: "JetBrains Mono", monospace !important;
+  /* Applied JetBrains Mono for code */
+  display: block;
+  overflow-x: auto;
+  padding: 1em;
+  background-color: #1e1f22;
+  /* Dracula background */
+}
+
+code.hljs {
+  padding: 3px 5px;
+}
+
+.hljs {
+  color: #f8f8f2;
+  /* Default text color */
+  background: #282a36;
+}
+
+/* Keywords (public, private, class, void, etc.) */
+.hljs-keyword,
+.hljs-meta .hljs-keyword {
+  color: #ff79c6;
+  /* Pink for keywords */
+}
+
+/* Class names */
+.hljs-title.class_ {
+  color: #50fa7b;
+  /* Bright green for class names */
+}
+
+/* Function names */
+.hljs-title.function_ {
+  color: #8be9fd;
+  /* Light blue for function names */
+}
+
+/* Data types, built-ins, and literals */
+.hljs-type,
+.hljs-literal,
+.hljs-number {
+  color: #bd93f9;
+  /* Purple for data types and numbers */
+}
+
+/* Strings */
+.hljs-string {
+  color: #f1fa8c;
+  /* Yellow for strings */
+}
+
+/* Comments */
+.hljs-comment {
+  color: #7a7e84;
+  /* Gray for comments */
+}
+
+/* Annotations */
+.hljs-attr,
+.hljs-attribute,
+.hljs-meta {
+  color: #ffb86c;
+  /* Orange for annotations */
+}
+
+/* Operators and Symbols */
+.hljs-operator {
+  color: #ff79c6;
+  /* Pink for operators */
+}
+
+/* Function parameters and variables */
+.hljs-variable,
+.hljs-params {
+  color: #ff8b8b;
+  /* Cyan for function parameters */
+}
+
+/* ====================================================== */
+
+:root {
+  --background-color: #121212;
+  --text-color: #e0e0e0;
+  --heading-color: #ffffff;
+  --code-background: #292929;
+  --code-color: #ffb86c;
+  --border-color: #2980b9;
+  --blockquote-background: #1a1a1a;
+  --button-background: #2980b9;
+  --button-text: #ffffff;
+  --button-hover: #1f618d;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  line-height: 1.6;
+  margin: 0;
+  margin-inline: calc(100vw / 4);
+  padding-block: 30px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+h1,
+h2,
+h3 {
+  color: var(--heading-color);
+}
+
+p {
+  margin-bottom: 15px;
+}
+
+strong {
+  color: var(--heading-color);
+}
+
+code {
+  background-color: var(--code-background);
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: var(--code-color);
+  font-family: "Courier New", Courier, monospace;
+}
+
+p code {
+  font-weight: bold;
+}
+
+pre {
+  background-color: var(--code-background);
+  padding: 10px;
+  border-radius: 7px;
+  overflow-x: auto;
+  border-left: 4px solid var(--border-color);
+  color: var(--text-color);
+  font-family: "Courier New", Courier, monospace;
+}
+
+@media (min-width: 600px) {
+  body {
+    margin: 50px;
+    /* Minimal margin for phones */
+  }
+}
+
+.highlight {
+  color: black;
+  background-color: rgb(255, 227, 87) !important;
+  padding-block: 3px;
+  border-radius: 5px;
+}
+
+.highlight p {
+  display: inline-block;
+  color: black;
+  background-color: rgb(255, 227, 87) !important;
+  padding-block: 3px;
+  border-radius: 5px;
+}
+
+.msreadout-line-highlight {
+  background-color: green !important;
+}
+
+.msreadout-word-highlight {
+  background-color: blue !important;
+}
+
+.menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  position: absolute;
+  height: 50px;
+  width: 100px;
+  background-color: rgb(50, 50, 50);
+  border-radius: 50px;
+  transition: 0.5s ease;
+}
+
+.menu-button {
+  padding: 10px;
+  border: none;
+}
+
+.menu-button:hover {
+  background-color: var(--code-color);
+}
+
+/* Style for the highlighted, commented text */
+.commented-text {
+  color: black;
+  background-color: rgb(255, 227, 87) !important;
+  padding-block: 3px;
+  border-radius: 5px;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Tooltip style */
+.commented-text:hover::after {
+  content: attr(data-comment);
+  position: absolute;
+  background-color: #8f8bff;
+  color: #000000;
+  padding: 5px;
+  border-radius: 5px;
+  white-space: nowrap;
+  top: 110%;
+  left: 0;
+  z-index: 10;
+  font-size: 16px;
+}
