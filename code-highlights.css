@@ -1,0 +1,81 @@
+/* ===================== Code highlighting =====================*/
+pre code.hljs {
+  font-family: 'JetBrains Mono', monospace !important;
+  /* Applied JetBrains Mono for code */
+  display: block;
+  overflow-x: auto;
+  padding: 1em;
+  background-color: #1e1f22;
+  /* Dracula background */
+}
+
+code.hljs {
+  padding: 3px 5px;
+}
+
+.hljs {
+  color: #f8f8f2;
+  /* Default text color */
+  background: #282a36;
+}
+
+/* Keywords (public, private, class, void, etc.) */
+.hljs-keyword,
+.hljs-meta .hljs-keyword {
+  color: #ff79c6;
+  /* Pink for keywords */
+}
+
+/* Class names */
+.hljs-title.class_ {
+  color: #50fa7b;
+  /* Bright green for class names */
+}
+
+/* Function names */
+.hljs-title.function_ {
+  color: #8be9fd;
+  /* Light blue for function names */
+}
+
+/* Data types, built-ins, and literals */
+.hljs-type,
+.hljs-literal,
+.hljs-number {
+  color: #bd93f9;
+  /* Purple for data types and numbers */
+}
+
+/* Strings */
+.hljs-string {
+  color: #f1fa8c;
+  /* Yellow for strings */
+}
+
+/* Comments */
+.hljs-comment {
+  color: #7a7e84;
+  /* Gray for comments */
+}
+
+/* Annotations */
+.hljs-attr,
+.hljs-attribute,
+.hljs-meta {
+  color: #ffb86c;
+  /* Orange for annotations */
+}
+
+/* Operators and Symbols */
+.hljs-operator {
+  color: #ff79c6;
+  /* Pink for operators */
+}
+
+/* Function parameters and variables */
+.hljs-variable,
+.hljs-params {
+  color: #ff8b8b;
+  /* Cyan for function parameters */
+}
+/* ====================================================== */
