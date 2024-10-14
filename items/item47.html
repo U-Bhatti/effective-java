@@ -1,0 +1,251 @@
+<div>
+    <h1>Item 47: Prefer Collection to Stream as a return type</h1>
+
+    <p>Many methods return sequences of elements. Prior to Java 8, the obvious return types for such methods
+        were
+        the collection interfaces <code>Collection</code>, <code>Set</code>, and <code>List</code>;
+        <code>Iterable</code>; and the array types. Usually, it was easy to decide which of these types to
+        return.
+        The norm was a collection interface. If the method existed solely to enable for-each loops or the
+        returned
+        sequence couldn’t be made to implement some Collection method (typically,
+        <code>contains(Object)</code>),
+        the <code>Iterable</code> interface was used. If the returned elements were primitive values or there
+        were
+        stringent performance requirements, arrays were used. In Java 8, streams were added to the platform,
+        substantially complicating the task of choosing the appropriate return type for a sequence-returning
+        method.
+    </p>
+
+    <p>You may hear it said that streams are now the obvious choice to return a sequence of elements, but as
+        discussed in <strong>Item 45</strong>, streams do not make iteration obsolete: writing good code
+        requires
+        combining streams and iteration judiciously. If an API returns only a stream and some users want to
+        iterate
+        over the returned sequence with a for-each loop, those users will be justifiably upset. It is especially
+        frustrating because the <code>Stream</code> interface contains the sole abstract method in the
+        <code>Iterable</code> interface, and <code>Stream</code>’s specification for this method is compatible
+        with
+        <code>Iterable</code>’s. The only thing preventing programmers from using a for-each loop to iterate
+        over a
+        stream is <code>Stream</code>’s failure to extend <code>Iterable</code>.
+    </p>
+
+    <p>Sadly, there is no good workaround for this problem. At first glance, it might appear that passing a
+        method
+        reference to <code>Stream</code>’s <code>iterator</code> method would work. The resulting code is
+        perhaps a
+        bit noisy and opaque, but not unreasonable:</p>
+    <pre><code class="language-java hljs">        <span class="hljs-comment">// Won't compile, due to limitations on Java's type inference</span>
+        <span class="hljs-keyword">for</span> (ProcessHandle ph : ProcessHandle.allProcesses()::iterator) {
+            <span class="hljs-comment">// Process the process</span>
+        }</code></pre>
+
+    <p>Unfortunately, if you attempt to compile this code, you’ll get an error message:</p>
+    <pre><code class="language-java hljs">        Test.java:<span class="hljs-number">6</span>: error: method reference not expected here
+        <span class="hljs-title function_">for</span> <span class="hljs-params">(ProcessHandle ph : ProcessHandle.allProcesses()</span>::iterator) {
+        ^</code></pre>
+
+    <p>In order to make the code compile, you have to cast the method reference to an appropriately
+        parameterized
+        <code>Iterable</code>:
+    </p>
+    <pre><code class="language-java hljs">        <span class="hljs-comment">// Hideous workaround to iterate over a stream</span>
+        <span class="hljs-keyword">for</span> (ProcessHandle ph : (Iterable&lt;ProcessHandle&gt;)
+            ProcessHandle.allProcesses()::iterator)</code></pre>
+
+    <p>This client code works, but it is too noisy and opaque to use in practice. A better workaround is to use
+        an
+        adapter method. The JDK does not provide such a method, but it’s easy to write one, using the same
+        technique
+        used in-line in the snippets above. Note that no cast is necessary in the adapter method because Java’s
+        type
+        inference works properly in this context:</p>
+    <pre><code class="language-java hljs">        <span class="hljs-comment">// Adapter from Stream&lt;E&gt; to Iterable&lt;E&gt;</span>
+        <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;E&gt; Iterable&lt;E&gt; <span class="hljs-title function_">iterableOf</span><span class="hljs-params">(Stream&lt;E&gt; stream)</span> {
+            <span class="hljs-keyword">return</span> stream::iterator;
+        }</code></pre>
+
+    <p>With this adapter, you can iterate over any stream with a for-each statement:</p>
+    <pre><code class="language-java hljs">        <span class="hljs-keyword">for</span> (ProcessHandle p : iterableOf(ProcessHandle.allProcesses())) {
+            <span class="hljs-comment">// Process the process</span>
+        }</code></pre>
+
+    <p>Note that the stream versions of the Anagrams program in <strong>Item 34</strong> use the
+        <code>Files.lines</code> method to read the dictionary, while the iterative version uses a scanner. The
+        <code>Files.lines</code> method is superior to a scanner, which silently swallows any exceptions
+        encountered
+        while reading the file. Ideally, we would have used <code>Files.lines</code> in the iterative version
+        too.
+        This is the sort of compromise that programmers will make if an API provides only stream access to a
+        sequence and they want to iterate over the sequence with a for-each statement.
+    </p>
+
+    <p>Conversely, a programmer who wants to process a sequence using a stream pipeline will be justifiably
+        upset by
+        an API that provides only an <code>Iterable</code>. Again, the JDK does not provide an adapter, but it’s
+        easy enough to write one:</p>
+    <pre><code class="language-java hljs">        <span class="hljs-comment">// Adapter from Iterable&lt;E&gt; to Stream&lt;E&gt;</span>
+        <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;E&gt; Stream&lt;E&gt; <span class="hljs-title function_">streamOf</span><span class="hljs-params">(Iterable&lt;E&gt; iterable)</span> {
+            <span class="hljs-keyword">return</span> StreamSupport.stream(iterable.spliterator(), <span class="hljs-literal">false</span>);
+        }</code></pre>
+
+    <p>If you’re writing a method that returns a sequence of objects and you know that it will only be used in a
+        stream pipeline, then of course you should feel free to return a stream. Similarly, a method returning a
+        sequence that will only be used for iteration should return an <code>Iterable</code>. But if you’re
+        writing
+        a public API that returns a sequence, you should provide for users who want to write stream pipelines as
+        well as those who want to write for-each statements, unless you have a good reason to believe that most
+        of
+        your users will want to use the same mechanism.</p>
+
+    <p>The <code>Collection</code> interface is a subtype of <code>Iterable</code> and has a <code>stream</code>
+        method, so it provides for both iteration and stream access. Therefore, <code>Collection</code> or an
+        appropriate subtype is generally the best return type for a public, sequence-returning method. Arrays
+        also
+        provide for easy iteration and stream access with the <code>Arrays.asList</code> and
+        <code>Stream.of</code>
+        methods. If the sequence you’re returning is small enough to fit easily in memory, you’re probably best
+        off
+        returning one of the standard collection implementations, such as <code>ArrayList</code> or
+        <code>HashSet</code>. But do not store a large sequence in memory just to return it as a collection.
+    </p>
+
+    <p>If the sequence you’re returning is large but can be represented concisely, consider implementing a
+        special-purpose collection. For example, suppose you want to return the power set of a given set, which
+        consists of all of its subsets. The power set of {a, b, c} is {{}, {a}, {b}, {c}, {a, b}, {a, c}, {b,
+        c},
+        {a, b, c}}. If a set has n elements, its power set has 2<sup>n</sup>. Therefore, you shouldn’t even
+        consider
+        storing the power set in a standard collection implementation. It is, however, easy to implement a
+        custom
+        collection for the job with the help of <code>AbstractList</code>.</p>
+    <pre><code class="language-java hljs">        <span class="hljs-comment">// Returns the power set of an input set as custom collection</span>
+        <span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">PowerSet</span> {
+            <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">final</span> &lt;E&gt; Collection&lt;Set&lt;E&gt;&gt; <span class="hljs-title function_">of</span><span class="hljs-params">(Set&lt;E&gt; s)</span> {
+                List&lt;E&gt; src = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;(s);
+                <span class="hljs-keyword">if</span> (src.size() &gt; <span class="hljs-number">30</span>)
+                    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IllegalArgumentException</span>(<span class="hljs-string">"Set too big "</span> + s);
+                <span class="hljs-keyword" style="font-family: JetBrains Mono, monospace;">return</span><span style="font-family: JetBrains Mono, monospace;"> </span><span class="hljs-keyword" style="font-family: JetBrains Mono, monospace;">new</span><span style="font-family: JetBrains Mono, monospace;"> </span><span class="hljs-title class_" style="font-family: JetBrains Mono, monospace;">AbstractList</span><span style="font-family: JetBrains Mono, monospace;">&lt;Set&lt;E&gt;&gt;() {</span></code><code class="language-java hljs">                    <span class="hljs-meta">@Override</span> <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">size</span><span class="hljs-params">()</span> {
+                        <span class="hljs-keyword">return</span> <span class="hljs-number">1</span> &lt;&lt; src.size(); <span class="hljs-comment">// 2 to the power srcSize</span>
+                    }</code><code class="language-java hljs">                    <span class="hljs-meta">@Override</span> <span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">contains</span><span class="hljs-params">(Object o)</span> {
+                        <span class="hljs-keyword">return</span> o <span class="hljs-keyword">instanceof</span> Set &amp;&amp; src.containsAll((Set)o);
+                    }</code><code class="language-java hljs">                    <span class="hljs-meta">@Override</span> <span class="hljs-keyword">public</span> Set&lt;E&gt; <span class="hljs-title function_">get</span><span class="hljs-params">(<span class="hljs-type">int</span> index)</span> {
+                        Set&lt;E&gt; result = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashSet</span>&lt;&gt;();
+                        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; index != <span class="hljs-number">0</span>; i++, index &gt;&gt;= <span class="hljs-number">1</span>)
+                            <span class="hljs-keyword">if</span> ((index &amp; <span class="hljs-number">1</span>) == <span class="hljs-number">1</span>)
+                                result.add(src.get(i));
+                        <span class="hljs-keyword">return</span> result;
+                    }
+                };
+            }
+        }</code></pre>
+
+    <p>Note that <code>PowerSet.of</code> throws an exception if the input set has more than 30 elements. This
+        highlights a disadvantage of using <code>Collection</code> as a return type rather than
+        <code>Stream</code>
+        or <code>Iterable</code>: <code>Collection</code> has an <code>int</code>-returning <code>size</code>
+        method, which limits the length of the returned sequence to <code>Integer.MAX_VALUE</code>, or
+        2<sup>31</sup> − 1. The <code>Collection</code> specification does allow the <code>size</code> method to
+        return 2<sup>31</sup> − 1 if the collection is larger, even infinite, but this is not a wholly
+        satisfying
+        solution.
+    </p>
+
+    <p>In order to write a <code>Collection</code> implementation atop <code>AbstractCollection</code>, you need
+        implement only two methods beyond the one required for <code>Iterable</code>: <code>contains</code> and
+        <code>size</code>. Often it’s easy to write efficient implementations of these methods. If it isn’t
+        feasible, perhaps because the contents of the sequence aren’t predetermined before iteration takes
+        place,
+        return a stream or iterable, whichever feels more natural. If you choose, you can return both using two
+        separate methods.
+    </p>
+
+    <p>There are times when you’ll choose the return type based solely on ease of implementation. For example,
+        suppose you want to write a method that returns all of the (contiguous) sublists of an input list. It
+        takes
+        only three lines of code to generate these sublists and put them in a standard collection, but the
+        memory
+        required to hold this collection is quadratic in the size of the source list. While this is not as bad
+        as
+        the power set, which is exponential, it is clearly unacceptable.</p>
+
+    <p>Implementing a custom collection, as we did for the power set, would be tedious, more so because the JDK
+        lacks a skeletal <code>Iterator</code> implementation to help us. It is, however, straightforward to
+        implement a stream of all the sublists of an input list, though it does require a minor insight. Let’s
+        call
+        a sublist that contains the first element of a list a prefix of the list. For example, the prefixes of
+        (a,
+        b, c) are (a), (a, b), and (a, b, c). Similarly, let’s call a sublist that contains the last element a
+        suffix, so the suffixes of (a, b, c) are (a, b, c), (b, c), and (c). The insight is that the sublists of
+        a
+        list are simply the suffixes of the prefixes (or identically, the prefixes of the suffixes) and the
+        empty
+        list. This observation leads directly to a clear, reasonably concise implementation:</p>
+    <pre><code class="language-java hljs">        <span class="hljs-comment">// Returns a stream of all the sublists of its input list</span>
+        <span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SubLists</span> {
+            <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;E&gt; Stream&lt;List&lt;E&gt;&gt; <span class="hljs-title function_">of</span><span class="hljs-params">(List&lt;E&gt; list)</span> {
+                <span class="hljs-keyword">return</span> Stream.concat(Stream.of(Collections.emptyList()), prefixes(list).flatMap(SubLists::suffixes));
+            }
+            <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> &lt;E&gt; Stream&lt;List&lt;E&gt;&gt; <span class="hljs-title function_">prefixes</span><span class="hljs-params">(List&lt;E&gt; list)</span> {
+                <span class="hljs-keyword">return</span> IntStream.rangeClosed(<span class="hljs-number">1</span>, list.size()).mapToObj(end -&gt; list.subList(<span class="hljs-number">0</span>, end));
+            }
+            <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> &lt;E&gt; Stream&lt;List&lt;E&gt;&gt; <span class="hljs-title function_">suffixes</span><span class="hljs-params">(List&lt;E&gt; list)</span> {
+                <span class="hljs-keyword">return</span> IntStream.range(<span class="hljs-number">0</span>, list.size()).mapToObj(start -&gt; list.subList(start, list.size()));
+            }
+        }</code></pre>
+
+    <p>Note that the <code>Stream.concat</code> method is used to add the empty list into the returned stream.
+        Also
+        note that the <code>flatMap</code> method (<strong>Item 45</strong>) is used to generate a single stream
+        consisting of all the suffixes of all the prefixes. Finally, note that we generate the prefixes and
+        suffixes
+        by mapping a stream of consecutive <code>int</code> values returned by <code>IntStream.range</code> and
+        <code>IntStream.rangeClosed</code>. This idiom is, roughly speaking, the stream equivalent of the
+        standard
+        for-loop on integer indices. Thus, our sublist implementation is similar in spirit to the obvious nested
+        for-loop:
+    </p>
+    <pre><code class="language-java hljs">        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">start</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; start &lt; src.size(); start++)
+            <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">end</span> <span class="hljs-operator">=</span> start + <span class="hljs-number">1</span>; end &lt;= src.size(); end++)
+                System.out.println(src.subList(start, end));</code></pre>
+
+    <p>It is possible to translate this for-loop directly into a stream. The result is more concise than our
+        previous implementation, but perhaps a bit less readable. It is similar in spirit to the streams code
+        for
+        the Cartesian product in <strong>Item 45</strong>:</p>
+    <pre><code class="language-java hljs">        <span class="hljs-comment">// Returns a stream of all the sublists of its input list</span>
+        <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> &lt;E&gt; Stream&lt;List&lt;E&gt;&gt; <span class="hljs-title function_">of</span><span class="hljs-params">(List&lt;E&gt; list)</span> {
+            <span class="hljs-keyword">return</span> IntStream.range(<span class="hljs-number">0</span>, list.size())
+                .mapToObj(start -&gt; IntStream.rangeClosed(start + <span class="hljs-number">1</span>, list.size()).mapToObj(end -&gt; list.subList(start, end)))
+                .flatMap(x -&gt; x);
+        }</code></pre>
+
+    <p>Like the for-loop that precedes it, this code does not emit the empty list. In order to fix this
+        deficiency,
+        you could either use <code>concat</code>, as we did in the previous version, or replace 1 by (int)
+        Math.signum(start) in the <code>rangeClosed</code> call.</p>
+
+    <p>Either of these stream implementations of sublists is fine, but both will require some users to employ a
+        Stream-to-Iterable adapter or to use a stream in places where iteration would be more natural. Not only
+        does
+        the Stream-to-Iterable adapter clutter up client code, but it slows down the loop by a factor of 2.3 on
+        my
+        machine. A purpose-built <code>Collection</code> implementation (not shown here) is considerably more
+        verbose but runs about 1.4 times as fast as our stream-based implementation on my machine.</p>
+
+    <p>In summary, when writing a method that returns a sequence of elements, remember that some of your users
+        may
+        want to process them as a stream while others may want to iterate over them. Try to accommodate both
+        groups.
+        If it’s feasible to return a collection, do so. If you already have the elements in a collection or the
+        number of elements in the sequence is small enough to justify creating a new one, return a standard
+        collection such as <code>ArrayList</code>. Otherwise, consider implementing a custom collection as we
+        did
+        for the power set. If it isn’t feasible to return a collection, return a stream or iterable, whichever
+        seems
+        more natural. If, in a future Java release, the <code>Stream</code> interface declaration is modified to
+        extend <code>Iterable</code>, then you should feel free to return streams because they will allow for
+        both
+        stream processing and iteration.</p>
+</div>
