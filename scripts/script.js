@@ -1,3 +1,6 @@
+import {loadMenu} from "./menu.js"
+
+loadMenu()
 let MENU;
 let MENU_BUTTON_COMMENT;
 let MENU_BUTTON_HIGHLIGHT;
@@ -48,7 +51,6 @@ document.addEventListener('touchend', (event) => {
 
 
 function textSelected(event) {
-
     SELECTED_TEXT = window.getSelection();
     hideMenu();
     if (SELECTED_TEXT.rangeCount > 0) {
