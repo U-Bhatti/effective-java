@@ -2,32 +2,33 @@
     <h1>Item 52: Use overloading judiciously</h1>
 
     <p>
-        The following program is a well-intentioned attempt to classify collections according to whether they are sets, lists, or some other kind of collection:
+        The following program is a well-intentioned attempt to classify collections according to whether they are sets,
+        lists, or some other kind of collection:
     </p>
 
     <pre><code class="language-java hljs">
-// Broken! - What does this program print?
-public class CollectionClassifier {
-    public static String classify(Set&lt;?&gt; s) {
-        return "Set";
+<span class="hljs-comment">// Broken! - What does this program print?</span>
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">CollectionClassifier</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">classify</span><span class="hljs-params">(Set&lt;?&gt; s)</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Set"</span>;
     }
 
-    public static String classify(List&lt;?&gt; lst) {
-        return "List";
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">classify</span><span class="hljs-params">(List&lt;?&gt; lst)</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"List"</span>;
     }
 
-    public static String classify(Collection&lt;?&gt; c) {
-        return "Unknown Collection";
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">classify</span><span class="hljs-params">(Collection&lt;?&gt; c)</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"Unknown Collection"</span>;
     }
 
-    public static void main(String[] args) {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
         Collection&lt;?&gt;[] collections = {
-            new HashSet&lt;String&gt;(),
-            new ArrayList&lt;BigInteger&gt;(),
-            new HashMap&lt;String, String&gt;().values()
+            <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashSet</span>&lt;String&gt;(),
+            <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;BigInteger&gt;(),
+            <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;String, String&gt;().values()
         };
 
-        for (Collection&lt;?&gt; c : collections) {
+        <span class="hljs-keyword">for</span> (Collection&lt;?&gt; c : collections) {
             System.out.println(classify(c));
         }
     }
@@ -35,40 +36,53 @@ public class CollectionClassifier {
     </code></pre>
 
     <p>
-        You might expect this program to print <code>Set</code>, followed by <code>List</code> and <code>Unknown Collection</code>, but it doesn't. It prints <code>Unknown Collection</code> three times. Why does this happen? Because the <code>classify</code> method is overloaded, and the choice of which overloading to invoke is made at compile time. For all three iterations of the loop, the compile-time type of the parameter is the same: <code>Collection&lt;?&gt;</code>. The runtime type is different in each iteration, but this does not affect the choice of overloading. Because the compile-time type of the parameter is <code>Collection&lt;?&gt;</code>, the only applicable overloading is the third one, <code>classify(Collection&lt;?&gt;)</code>, and this overloading is invoked in each iteration of the loop.
+        You might expect this program to print <code>Set</code>, followed by <code>List</code> and
+        <code>Unknown Collection</code>, but it doesn't. It prints <code>Unknown Collection</code> three times. Why does
+        this happen? Because the <code>classify</code> method is overloaded, and the choice of which overloading to
+        invoke is made at compile time. For all three iterations of the loop, the compile-time type of the parameter is
+        the same: <code>Collection&lt;?&gt;</code>. The runtime type is different in each iteration, but this does not
+        affect the choice of overloading. Because the compile-time type of the parameter is
+        <code>Collection&lt;?&gt;</code>, the only applicable overloading is the third one,
+        <code>classify(Collection&lt;?&gt;)</code>, and this overloading is invoked in each iteration of the loop.
     </p>
 
     <p>
-        The behavior of this program is counterintuitive because selection among overloaded methods is static, while selection among overridden methods is dynamic. The correct version of an overridden method is chosen at runtime, based on the runtime type of the object on which the method is invoked. As a reminder, a method is overridden when a subclass contains a method declaration with the same signature as a method declaration in an ancestor. If an instance method is overridden in a subclass and this method is invoked on an instance of the subclass, the subclass's overriding method executes, regardless of the compile-time type of the subclass instance. To make this concrete, consider the following program:
+        The behavior of this program is counterintuitive because selection among overloaded methods is static, while
+        selection among overridden methods is dynamic. The correct version of an overridden method is chosen at runtime,
+        based on the runtime type of the object on which the method is invoked. As a reminder, a method is overridden
+        when a subclass contains a method declaration with the same signature as a method declaration in an ancestor. If
+        an instance method is overridden in a subclass and this method is invoked on an instance of the subclass, the
+        subclass's overriding method executes, regardless of the compile-time type of the subclass instance. To make
+        this concrete, consider the following program:
     </p>
 
     <pre><code class="language-java hljs">
-class Wine {
-    String name() {
-        return "wine";
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Wine</span> {
+    String <span class="hljs-title function_">name</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"wine"</span>;
     }
 }
 
-class SparklingWine extends Wine {
-    @Override
-    String name() {
-        return "sparkling wine";
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">SparklingWine</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Wine</span> {
+    <span class="hljs-meta">@Override</span>
+    String <span class="hljs-title function_">name</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"sparkling wine"</span>;
     }
 }
 
-class Champagne extends SparklingWine {
-    @Override
-    String name() {
-        return "champagne";
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">Champagne</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">SparklingWine</span> {
+    <span class="hljs-meta">@Override</span>
+    String <span class="hljs-title function_">name</span><span class="hljs-params">()</span> {
+        <span class="hljs-keyword">return</span> <span class="hljs-string">"champagne"</span>;
     }
 }
 
-public class Overriding {
-    public static void main(String[] args) {
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">Overriding</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
         List&lt;Wine&gt; wineList = List.of(
-            new Wine(), new SparklingWine(), new Champagne());
+            <span class="hljs-keyword">new</span> <span class="hljs-title class_">Wine</span>(), <span class="hljs-keyword">new</span> <span class="hljs-title class_">SparklingWine</span>(), <span class="hljs-keyword">new</span> <span class="hljs-title class_">Champagne</span>());
 
-        for (Wine wine : wineList) {
+        <span class="hljs-keyword">for</span> (Wine wine : wineList) {
             System.out.println(wine.name());
         }
     }
@@ -76,130 +90,240 @@ public class Overriding {
     </code></pre>
 
     <p>
-        The <code>name</code> method is declared in class <code>Wine</code> and overridden in subclasses <code>SparklingWine</code> and <code>Champagne</code>. As you would expect, this program prints out <code>wine</code>, <code>sparkling wine</code>, and <code>champagne</code>, even though the compile-time type of the instance is <code>Wine</code> in each iteration of the loop. The compile-time type of an object has no effect on which method is executed when an overridden method is invoked; the "most specific" overriding method always gets executed. Compare this to overloading, where the runtime type of an object has no effect on which overloading is executed; the selection is made at compile time, based entirely on the compile-time types of the parameters.
+        The <code>name</code> method is declared in class <code>Wine</code> and overridden in subclasses
+        <code>SparklingWine</code> and <code>Champagne</code>. As you would expect, this program prints out
+        <code>wine</code>, <code>sparkling wine</code>, and <code>champagne</code>, even though the compile-time type of
+        the instance is <code>Wine</code> in each iteration of the loop. The compile-time type of an object has no
+        effect on which method is executed when an overridden method is invoked; the "most specific" overriding method
+        always gets executed. Compare this to overloading, where the runtime type of an object has no effect on which
+        overloading is executed; the selection is made at compile time, based entirely on the compile-time types of the
+        parameters.
     </p>
 
     <p>
-        In the <code>CollectionClassifier</code> example, the intent of the program was to discern the type of the parameter by dispatching automatically to the appropriate method overloading based on the runtime type of the parameter, just as the <code>name</code> method did in the <code>Wine</code> example. Method overloading simply does not provide this functionality. Assuming a static method is required, the best way to fix the <code>CollectionClassifier</code> program is to replace all three overloadings of <code>classify</code> with a single method that does explicit <code>instanceof</code> tests:
+        In the <code>CollectionClassifier</code> example, the intent of the program was to discern the type of the
+        parameter by dispatching automatically to the appropriate method overloading based on the runtime type of the
+        parameter, just as the <code>name</code> method did in the <code>Wine</code> example. Method overloading simply
+        does not provide this functionality. Assuming a static method is required, the best way to fix the
+        <code>CollectionClassifier</code> program is to replace all three overloadings of <code>classify</code> with a
+        single method that does explicit <code>instanceof</code> tests:
     </p>
 
     <pre><code class="language-java hljs">
-public static String classify(Collection&lt;?&gt; c) {
-    return c instanceof Set ? "Set" :
-           c instanceof List ? "List" : "Unknown Collection";
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">classify</span><span class="hljs-params">(Collection&lt;?&gt; c)</span> {
+    <span class="hljs-keyword">return</span> c <span class="hljs-keyword">instanceof</span> Set ? <span class="hljs-string">"Set"</span> :
+           c <span class="hljs-keyword">instanceof</span> List ? <span class="hljs-string">"List"</span> : <span class="hljs-string">"Unknown Collection"</span>;
 }
     </code></pre>
 
     <p>
-        Because overriding is the norm and overloading is the exception, overriding sets people's expectations for the behavior of method invocation. As demonstrated by the <code>CollectionClassifier</code> example, overloading can easily confound these expectations. It is bad practice to write code whose behavior is likely to confuse programmers. This is especially true for APIs. If the typical user of an API does not know which of several method overloadings will get invoked for a given set of parameters, use of the API is likely to result in errors. These errors will likely manifest themselves as erratic behavior at runtime, and many programmers will have a hard time diagnosing them. Therefore, you should avoid confusing uses of overloading.
+        Because overriding is the norm and overloading is the exception, overriding sets people's expectations for the
+        behavior of method invocation. As demonstrated by the <code>CollectionClassifier</code> example, overloading can
+        easily confound these expectations. It is bad practice to write code whose behavior is likely to confuse
+        programmers. This is especially true for APIs. If the typical user of an API does not know which of several
+        method overloadings will get invoked for a given set of parameters, use of the API is likely to result in
+        errors. These errors will likely manifest themselves as erratic behavior at runtime, and many programmers will
+        have a hard time diagnosing them. Therefore, you should avoid confusing uses of overloading.
     </p>
 
     <p>
-        Exactly what constitutes a confusing use of overloading is open to some debate. A safe, conservative policy is never to export two overloadings with the same number of parameters. If a method uses varargs, a conservative policy is not to overload it at all, except as described in Item 53. If you adhere to these restrictions, programmers will never be in doubt as to which overloading applies to any set of actual parameters. These restrictions are not terribly onerous because you can always give methods different names instead of overloading them.
+        Exactly what constitutes a confusing use of overloading is open to some debate. A safe, conservative policy is
+        never to export two overloadings with the same number of parameters. If a method uses varargs, a conservative
+        policy is not to overload it at all, except as described in Item 53. If you adhere to these restrictions,
+        programmers will never be in doubt as to which overloading applies to any set of actual parameters. These
+        restrictions are not terribly onerous because you can always give methods different names instead of overloading
+        them.
     </p>
 
     <p>
-        For example, consider the <code>ObjectOutputStream</code> class. It has a variant of its <code>write</code> method for every primitive type and for several reference types. Rather than overloading the <code>write</code> method, these variants all have different names, such as <code>writeBoolean(boolean)</code>, <code>writeInt(int)</code>, and <code>writeLong(long)</code>. An added benefit of this naming pattern, when compared to overloading, is that it is possible to provide <code>read</code> methods with corresponding names, for example, <code>readBoolean()</code>, <code>readInt()</code>, and <code>readLong()</code>. The <code>ObjectInputStream</code> class does, in fact, provide such <code>read</code> methods.
+        For example, consider the <code>ObjectOutputStream</code> class. It has a variant of its <code>write</code>
+        method for every primitive type and for several reference types. Rather than overloading the <code>write</code>
+        method, these variants all have different names, such as <code>writeBoolean(boolean)</code>,
+        <code>writeInt(int)</code>, and <code>writeLong(long)</code>. An added benefit of this naming pattern, when
+        compared to overloading, is that it is possible to provide <code>read</code> methods with corresponding names,
+        for example, <code>readBoolean()</code>, <code>readInt()</code>, and <code>readLong()</code>. The
+        <code>ObjectInputStream</code> class does, in fact, provide such <code>read</code> methods.
     </p>
 
     <p>
-        For constructors, you don't have the option of using different names: multiple constructors for a class are always overloaded. You do, in many cases, have the option of exporting static factories instead of constructors (Item 1). Also, with constructors you don't have to worry about interactions between overloading and overriding, because constructors can't be overridden. You will probably have occasion to export multiple constructors with the same number of parameters, so it pays to know how to do it safely.
+        For constructors, you don't have the option of using different names: multiple constructors for a class are
+        always overloaded. You do, in many cases, have the option of exporting static factories instead of constructors
+        (Item 1). Also, with constructors you don't have to worry about interactions between overloading and overriding,
+        because constructors can't be overridden. You will probably have occasion to export multiple constructors with
+        the same number of parameters, so it pays to know how to do it safely.
     </p>
 
     <p>
-        Exporting multiple overloadings with the same number of parameters is unlikely to confuse programmers if it is always clear which overloading will apply to any given set of actual parameters. This is the case when at least one corresponding formal parameter in each pair of overloadings has a "radically different" type in the two overloadings. Two types are radically different if it is clearly impossible to cast any non-null expression to both types. Under these circumstances, which overloading applies to a given set of actual parameters is fully determined by the runtime types of the parameters and cannot be affected by their compile-time types, so a major source of confusion goes away. For example, <code>ArrayList</code> has one constructor that takes an <code>int</code> and a second constructor that takes a <code>Collection</code>. It is hard to imagine any confusion over which of these two constructors will be invoked under any circumstances.
+        Exporting multiple overloadings with the same number of parameters is unlikely to confuse programmers if it is
+        always clear which overloading will apply to any given set of actual parameters. This is the case when at least
+        one corresponding formal parameter in each pair of overloadings has a "radically different" type in the two
+        overloadings. Two types are radically different if it is clearly impossible to cast any non-null expression to
+        both types. Under these circumstances, which overloading applies to a given set of actual parameters is fully
+        determined by the runtime types of the parameters and cannot be affected by their compile-time types, so a major
+        source of confusion goes away. For example, <code>ArrayList</code> has one constructor that takes an
+        <code>int</code> and a second constructor that takes a <code>Collection</code>. It is hard to imagine any
+        confusion over which of these two constructors will be invoked under any circumstances.
     </p>
 
     <p>
-        Prior to Java 5, all primitive types were radically different from all reference types, but this is not true in the presence of autoboxing, and it has caused real trouble. Consider the following program:
+        Prior to Java 5, all primitive types were radically different from all reference types, but this is not true in
+        the presence of autoboxing, and it has caused real trouble. Consider the following program:
     </p>
 
     <pre><code class="language-java hljs">
-public class SetList {
-    public static void main(String[] args) {
-        Set&lt;Integer&gt; set = new TreeSet&lt;&gt;();
-        List&lt;Integer&gt; list = new ArrayList&lt;&gt;();
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">SetList</span> {
+    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> {
+        Set&lt;Integer&gt; set = <span class="hljs-keyword">new</span> <span class="hljs-title class_">TreeSet</span>&lt;&gt;();
+        List&lt;Integer&gt; list = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();
 
-        for (int i = -3; i &lt; 3; i++) {
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> -<span class="hljs-number">3</span>; i &lt; <span class="hljs-number">3</span>; i++) {
             set.add(i);
             list.add(i);
         }
 
-        for (int i = 0; i &lt; 3; i++) {
+        <span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">3</span>; i++) {
             set.remove(i);
             list.remove(i);
         }
 
-        System.out.println(set + " " + list);
+        System.out.println(set + <span class="hljs-string">" "</span> + list);
     }
 }
     </code></pre>
 
     <p>
-        First, the program adds the integers from <code>-3</code> to <code>2</code>, inclusive, to a sorted set and a list. Then, it makes three identical calls to <code>remove</code> on the set and the list. If you're like most people, you'd expect the program to remove the non-negative values (<code>0</code>, <code>1</code>, and <code>2</code>) from the set and the list and to print <code>[-3, -2, -1] [-3, -2, -1]</code>. In fact, the program removes the non-negative values from the set and the odd values from the list and prints <code>[-3, -2, -1] [-2, 0, 2]</code>. It is an understatement to call this behavior confusing.
+        First, the program adds the integers from <code>-3</code> to <code>2</code>, inclusive, to a sorted set and a
+        list. Then, it makes three identical calls to <code>remove</code> on the set and the list. If you're like most
+        people, you'd expect the program to remove the non-negative values (<code>0</code>, <code>1</code>, and
+        <code>2</code>) from the set and the list and to print <code>[-3, -2, -1] [-3, -2, -1]</code>. In fact, the
+        program removes the non-negative values from the set and the odd values from the list and prints
+        <code>[-3, -2, -1] [-2, 0, 2]</code>. It is an understatement to call this behavior confusing.
     </p>
 
     <p>
-        Here's what's happening: The call to <code>set.remove(i)</code> selects the overloading <code>remove(E)</code>, where <code>E</code> is the element type of the set (<code>Integer</code>), and autoboxes <code>i</code> from <code>int</code> to <code>Integer</code>. This is the behavior you'd expect, so the program ends up removing the positive values from the set. The call to <code>list.remove(i)</code>, on the other hand, selects the overloading <code>remove(int i)</code>, which removes the element at the specified position in the list. If you start with the list <code>[-3, -2, -1, 0, 1, 2]</code> and remove the zeroth element, then the first, and then the second, you're left with <code>[-2, 0, 2]</code>, and the mystery is solved. To fix the problem, cast <code>list.remove</code>'s argument to <code>Integer</code>, forcing the correct overloading to be selected. Alternatively, you could invoke <code>Integer.valueOf</code> on <code>i</code> and pass the result to <code>list.remove</code>. Either way, the program prints <code>[-3, -2, -1] [-3, -2, -1]</code>, as expected:
+        Here's what's happening: The call to <code>set.remove(i)</code> selects the overloading <code>remove(E)</code>,
+        where <code>E</code> is the element type of the set (<code>Integer</code>), and autoboxes <code>i</code> from
+        <code>int</code> to <code>Integer</code>. This is the behavior you'd expect, so the program ends up removing the
+        positive values from the set. The call to <code>list.remove(i)</code>, on the other hand, selects the
+        overloading <code>remove(int i)</code>, which removes the element at the specified position in the list. If you
+        start with the list <code>[-3, -2, -1, 0, 1, 2]</code> and remove the zeroth element, then the first, and then
+        the second, you're left with <code>[-2, 0, 2]</code>, and the mystery is solved. To fix the problem, cast
+        <code>list.remove</code>'s argument to <code>Integer</code>, forcing the correct overloading to be selected.
+        Alternatively, you could invoke <code>Integer.valueOf</code> on <code>i</code> and pass the result to
+        <code>list.remove</code>. Either way, the program prints <code>[-3, -2, -1] [-3, -2, -1]</code>, as expected:
     </p>
 
     <pre><code class="language-java hljs">
-for (int i = 0; i &lt; 3; i++) {
+<span class="hljs-keyword">for</span> (<span class="hljs-type">int</span> <span class="hljs-variable">i</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>; i &lt; <span class="hljs-number">3</span>; i++) {
     set.remove(i);
-    list.remove((Integer) i); // or remove(Integer.valueOf(i))
+    list.remove((Integer) i); <span class="hljs-comment">// or remove(Integer.valueOf(i))</span>
 }
     </code></pre>
 
     <p>
-        The confusing behavior demonstrated by the previous example came about because the <code>List&lt;E&gt;</code> interface has two overloadings of the <code>remove</code> method: <code>remove(E)</code> and <code>remove(int)</code>. Prior to Java 5 when the <code>List</code> interface was "generified," it had a <code>remove(Object)</code> method in place of <code>remove(E)</code>, and the corresponding parameter types, <code>Object</code> and <code>int</code>, were radically different. But in the presence of generics and autoboxing, the two parameter types are no longer radically different. In other words, adding generics and autoboxing to the language damaged the <code>List</code> interface. Luckily, few if any other APIs in the Java libraries were similarly damaged, but this tale makes it clear that autoboxing and generics increased the importance of caution when overloading.
+        The confusing behavior demonstrated by the previous example came about because the <code>List&lt;E&gt;</code>
+        interface has two overloadings of the <code>remove</code> method: <code>remove(E)</code> and
+        <code>remove(int)</code>. Prior to Java 5 when the <code>List</code> interface was "generified," it had a
+        <code>remove(Object)</code> method in place of <code>remove(E)</code>, and the corresponding parameter types,
+        <code>Object</code> and <code>int</code>, were radically different. But in the presence of generics and
+        autoboxing, the two parameter types are no longer radically different. In other words, adding generics and
+        autoboxing to the language damaged the <code>List</code> interface. Luckily, few if any other APIs in the Java
+        libraries were similarly damaged, but this tale makes it clear that autoboxing and generics increased the
+        importance of caution when overloading.
     </p>
 
     <p>
-        The addition of lambdas and method references in Java 8 further increased the potential for confusion in overloading. For example, consider these two snippets:
+        The addition of lambdas and method references in Java 8 further increased the potential for confusion in
+        overloading. For example, consider these two snippets:
     </p>
 
     <pre><code class="language-java hljs">
-new Thread(System.out::println).start();
-ExecutorService exec = Executors.newCachedThreadPool();
+<span class="hljs-keyword">new</span> <span class="hljs-title class_">Thread</span>(System.out::println).start();
+<span class="hljs-type">ExecutorService</span> <span class="hljs-variable">exec</span> <span class="hljs-operator">=</span> Executors.newCachedThreadPool();
 exec.submit(System.out::println);
     </code></pre>
 
     <p>
-        While the <code>Thread</code> constructor invocation and the <code>submit</code> method invocation look similar, the former compiles while the latter does not. The arguments are identical (<code>System.out::println</code>), and both the constructor and the method have an overloading that takes a <code>Runnable</code>. What's going on here? The surprising answer is that the <code>submit</code> method has an overloading that takes a <code>Callable&lt;T&gt;</code>, while the <code>Thread</code> constructor does not. You might think that this shouldn't make any difference because all overloadings of <code>println</code> return <code>void</code>, so the method reference couldn't possibly be a <code>Callable</code>. This makes perfect sense, but it's not the way the overload resolution algorithm works. Perhaps equally surprising is that the <code>submit</code> method invocation would be legal if the <code>println</code> method weren't also overloaded. It is the combination of the overloading of the referenced method (<code>println</code>) and the invoked method (<code>submit</code>) that prevents the overload resolution algorithm from behaving as you'd expect.
+        While the <code>Thread</code> constructor invocation and the <code>submit</code> method invocation look similar,
+        the former compiles while the latter does not. The arguments are identical (<code>System.out::println</code>),
+        and both the constructor and the method have an overloading that takes a <code>Runnable</code>. What's going on
+        here? The surprising answer is that the <code>submit</code> method has an overloading that takes a
+        <code>Callable&lt;T&gt;</code>, while the <code>Thread</code> constructor does not. You might think that this
+        shouldn't make any difference because all overloadings of <code>println</code> return <code>void</code>, so the
+        method reference couldn't possibly be a <code>Callable</code>. This makes perfect sense, but it's not the way
+        the overload resolution algorithm works. Perhaps equally surprising is that the <code>submit</code> method
+        invocation would be legal if the <code>println</code> method weren't also overloaded. It is the combination of
+        the overloading of the referenced method (<code>println</code>) and the invoked method (<code>submit</code>)
+        that prevents the overload resolution algorithm from behaving as you'd expect.
     </p>
 
     <p>
-        Technically speaking, the problem is that <code>System.out::println</code> is an inexact method reference [JLS, 15.13.1] and that "certain argument expressions that contain implicitly typed lambda expressions or inexact method references are ignored by the applicability tests, because their meaning cannot be determined until a target type is selected [JLS, 15.12.2]." Don't worry if you don't understand this passage; it is aimed at compiler writers. The key point is that overloading methods or constructors with different functional interfaces in the same argument position causes confusion. Therefore, do not overload methods to take different functional interfaces in the same argument position. In the parlance of this item, different functional interfaces are not radically different. The Java compiler will warn you about this sort of problematic overload if you pass the command line switch <code>-Xlint:overloads</code>.
+        Technically speaking, the problem is that <code>System.out::println</code> is an inexact method reference [JLS,
+        15.13.1] and that "certain argument expressions that contain implicitly typed lambda expressions or inexact
+        method references are ignored by the applicability tests, because their meaning cannot be determined until a
+        target type is selected [JLS, 15.12.2]." Don't worry if you don't understand this passage; it is aimed at
+        compiler writers. The key point is that overloading methods or constructors with different functional interfaces
+        in the same argument position causes confusion. Therefore, do not overload methods to take different functional
+        interfaces in the same argument position. In the parlance of this item, different functional interfaces are not
+        radically different. The Java compiler will warn you about this sort of problematic overload if you pass the
+        command line switch <code>-Xlint:overloads</code>.
     </p>
 
     <p>
-        Array types and class types other than <code>Object</code> are radically different. Also, array types and interface types other than <code>Serializable</code> and <code>Cloneable</code> are radically different. Two distinct classes are said to be unrelated if neither class is a descendant of the other [JLS, 5.5]. For example, <code>String</code> and <code>Throwable</code> are unrelated. It is impossible for any object to be an instance of two unrelated classes, so unrelated classes are radically different, too.
+        Array types and class types other than <code>Object</code> are radically different. Also, array types and
+        interface types other than <code>Serializable</code> and <code>Cloneable</code> are radically different. Two
+        distinct classes are said to be unrelated if neither class is a descendant of the other [JLS, 5.5]. For example,
+        <code>String</code> and <code>Throwable</code> are unrelated. It is impossible for any object to be an instance
+        of two unrelated classes, so unrelated classes are radically different, too.
     </p>
 
     <p>
-        There are other pairs of types that can't be converted in either direction [JLS, 5.1.12], but once you go beyond the simple cases described above, it becomes very difficult for most programmers to discern which, if any, overloading applies to a set of actual parameters. The rules that determine which overloading is selected are extremely complex and grow more complex with every release. Few programmers understand all of their subtleties.
+        There are other pairs of types that can't be converted in either direction [JLS, 5.1.12], but once you go beyond
+        the simple cases described above, it becomes very difficult for most programmers to discern which, if any,
+        overloading applies to a set of actual parameters. The rules that determine which overloading is selected are
+        extremely complex and grow more complex with every release. Few programmers understand all of their subtleties.
     </p>
 
     <p>
-        There may be times when you feel the need to violate the guidelines in this item, especially when evolving existing classes. For example, consider <code>String</code>, which has had a <code>contentEquals(StringBuffer)</code> method since Java 4. In Java 5, <code>CharSequence</code> was added to provide a common interface for <code>StringBuffer</code>, <code>StringBuilder</code>, <code>String</code>, <code>CharBuffer</code>, and other similar types. At the same time that <code>CharSequence</code> was added, <code>String</code> was outfitted with an overloading of the <code>contentEquals</code> method that takes a <code>CharSequence</code>.
+        There may be times when you feel the need to violate the guidelines in this item, especially when evolving
+        existing classes. For example, consider <code>String</code>, which has had a
+        <code>contentEquals(StringBuffer)</code> method since Java 4. In Java 5, <code>CharSequence</code> was added to
+        provide a common interface for <code>StringBuffer</code>, <code>StringBuilder</code>, <code>String</code>,
+        <code>CharBuffer</code>, and other similar types. At the same time that <code>CharSequence</code> was added,
+        <code>String</code> was outfitted with an overloading of the <code>contentEquals</code> method that takes a
+        <code>CharSequence</code>.
     </p>
 
     <p>
-        While the resulting overloading clearly violates the guidelines in this item, it causes no harm because both overloaded methods do exactly the same thing when they are invoked on the same object reference. The programmer may not know which overloading will be invoked, but it is of no consequence so long as they behave identically. The standard way to ensure this behavior is to have the more specific overloading forward to the more general:
+        While the resulting overloading clearly violates the guidelines in this item, it causes no harm because both
+        overloaded methods do exactly the same thing when they are invoked on the same object reference. The programmer
+        may not know which overloading will be invoked, but it is of no consequence so long as they behave identically.
+        The standard way to ensure this behavior is to have the more specific overloading forward to the more general:
     </p>
 
     <pre><code class="language-java hljs">
-// Ensuring that 2 methods have identical behavior by forwarding
-public boolean contentEquals(StringBuffer sb) {
-    return contentEquals((CharSequence) sb);
+<span class="hljs-comment">// Ensuring that 2 methods have identical behavior by forwarding</span>
+<span class="hljs-keyword">public</span> <span class="hljs-type">boolean</span> <span class="hljs-title function_">contentEquals</span><span class="hljs-params">(StringBuffer sb)</span> {
+    <span class="hljs-keyword">return</span> contentEquals((CharSequence) sb);
 }
     </code></pre>
 
     <p>
-        While the Java libraries largely adhere to the spirit of the advice in this item, there are a number of classes that violate it. For example, <code>String</code> exports two overloaded static factory methods, <code>valueOf(char[])</code> and <code>valueOf(Object)</code>, that do completely different things when passed the same object reference. There is no real justification for this, and it should be regarded as an anomaly with the potential for real confusion.
+        While the Java libraries largely adhere to the spirit of the advice in this item, there are a number of classes
+        that violate it. For example, <code>String</code> exports two overloaded static factory methods,
+        <code>valueOf(char[])</code> and <code>valueOf(Object)</code>, that do completely different things when passed
+        the same object reference. There is no real justification for this, and it should be regarded as an anomaly with
+        the potential for real confusion.
     </p>
 
     <p>
-        To summarize, just because you can overload methods doesn't mean you should. It is generally best to refrain from overloading methods with multiple signatures that have the same number of parameters. In some cases, especially where constructors are involved, it may be impossible to follow this advice. In these cases, you should at least avoid situations where the same set of parameters can be passed to different overloadings by the addition of casts. If this cannot be avoided, for example, because you are retrofitting an existing class to implement a new interface, you should ensure that all overloadings behave identically when passed the same parameters. If you fail to do this, programmers will be hard-pressed to make effective use of the overloaded method or constructor, and they won't understand why it doesn't work.
+        To summarize, just because you can overload methods doesn't mean you should. It is generally best to refrain
+        from overloading methods with multiple signatures that have the same number of parameters. In some cases,
+        especially where constructors are involved, it may be impossible to follow this advice. In these cases, you
+        should at least avoid situations where the same set of parameters can be passed to different overloadings by the
+        addition of casts. If this cannot be avoided, for example, because you are retrofitting an existing class to
+        implement a new interface, you should ensure that all overloadings behave identically when passed the same
+        parameters. If you fail to do this, programmers will be hard-pressed to make effective use of the overloaded
+        method or constructor, and they won't understand why it doesn't work.
     </p>
 </div>
